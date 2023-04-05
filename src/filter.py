@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
-
-# Do not erase or modify any lines already written
+import math
 
 
 def apply_average_filter(img, kernel_size):
@@ -92,3 +91,53 @@ def apply_sobel_filter(img, kernel_size, is_vertical):
             img_result[row, col, 0] = np.clip(temp, 0, 255)
 
     return img_result
+
+
+def distance(x, y, i, j):
+    return np.sqrt((x-i)**2 + (y-j)**2)
+
+
+def gaussian(x, sigma):
+    return (1.0 / (2 * math.pi * (sigma ** 2))) * math.exp(- (x ** 2) / (2 * sigma ** 2))
+
+def gaussian_kernel(k_size, sigma):
+    size = k_size//2
+
+    y, x = np.ogrid[-size:size+1, -size:size+1]
+    gaussian_filter = 1/(2*np.pi * (sigma**2)) * \
+        np.exp(-1 * (x**2 + y**2) / (2*(sigma**2)))
+
+    sum_of_filter = gaussian_filter.sum()
+    gaussian_filter /= sum_of_filter
+
+    return gaussian_filter
+
+
+def padding(img, k_size):
+    pad_size = k_size//2
+    rows, cols, ch = img.shape
+
+    res = np.zeros((rows + (2*pad_size), cols +
+                   (2*pad_size), ch), dtype=np.float64)
+
+    if pad_size == 0:
+        res = img.copy()
+    else:
+        res[pad_size:-pad_size, pad_size:-pad_size] = img.copy()
+
+    return res
+
+
+def apply_gaussian_filter(img, k_size=3, sigma=1):
+    rows, cols, channels = img.shape
+    gaussian_filter = gaussian_kernel(k_size, sigma)
+    pad_img = padding(img, k_size)
+    filtered_img = np.zeros((rows, cols, channels), dtype=np.float32)
+
+    for ch in range(0, channels):
+        for i in range(rows):
+            for j in range(cols):
+                filtered_img[i, j, ch] = np.sum(
+                    gaussian_filter * pad_img[i:i+k_size, j:j+k_size, ch])
+
+    return filtered_img.astype(np.uint8)
