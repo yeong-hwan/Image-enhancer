@@ -92,6 +92,7 @@ def apply_sobel_filter(img, kernel_size, is_vertical):
 
     return img_result
 
+# Gaussian
 
 def distance(x, y, i, j):
     return np.sqrt((x-i)**2 + (y-j)**2)
@@ -141,3 +142,39 @@ def apply_gaussian_filter(img, k_size=3, sigma=1):
                     gaussian_filter * pad_img[i:i+k_size, j:j+k_size, ch])
 
     return filtered_img.astype(np.uint8)
+
+
+# Mefian
+
+def apply_median_filter(img, kernel_size):
+    edge = int((kernel_size - 1) / 2)
+
+    row_len = len(img)
+    col_len = len(img[0])
+
+    img_result = np.full((row_len, col_len, 3), 0)
+
+    for row in range(row_len):
+        for col in range(col_len):
+            temp_0, temp_1, temp_2 = [], [], []
+
+            for result_row in range(row-edge, row+edge+1):
+                for result_col in range(col-edge, col+edge+1):
+                    try:
+                        temp_0.append(img[result_row, result_col, 0])
+                    except:
+                        pass
+                    try:
+                        temp_1.append(img[result_row, result_col, 1])
+                    except:
+                        pass
+                    try:
+                        temp_2.append(img[result_row, result_col, 2])
+                    except:
+                        pass
+
+            color_0, color_1, color_2 = np.median(
+                temp_0), np.median(temp_1), np.median(temp_2)
+            img_result[row, col] = [color_0, color_1, color_2]
+
+    return img_result
