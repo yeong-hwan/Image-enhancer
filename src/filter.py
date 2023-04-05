@@ -178,3 +178,64 @@ def apply_median_filter(img, kernel_size):
             img_result[row, col] = [color_0, color_1, color_2]
 
     return img_result
+
+# bilateral
+
+def apply_bilateral_filter(source, filtered_image, x, y, diameter, sigma_i, sigma_s):
+    hl = diameter//2
+
+    for color in range(3):
+        i_filtered = 0
+        Wp = 0
+        i = 0
+
+        while i < diameter:
+            j = 0
+
+            while j < diameter:
+                neighbour_x = x - (hl - i)
+                neighbour_y = y - (hl - j)
+
+                if neighbour_x >= len(source):
+                    neighbour_x -= len(source)
+
+                if neighbour_y >= len(source[0]):
+                    neighbour_y -= len(source[0])
+
+                # print(source[neighbour_x][neighbour_y])
+                # print(source[x][y])
+                # print(source[neighbour_x][neighbour_y] - source[x][y])
+
+                gi = gaussian(source[neighbour_x]
+                              [neighbour_y][color] - source[x][y][color], sigma_i)
+                gs = gaussian(
+                    distance(neighbour_x, neighbour_y, x, y), sigma_s)
+
+                w = gi * gs
+                i_filtered += source[neighbour_x][neighbour_y][color] * w
+
+                Wp += w
+                j += 1
+            i += 1
+
+        i_filtered = i_filtered / Wp
+        filtered_image[x][y][color] = int(round(i_filtered))
+
+
+def bilateral_filter_own(source, filter_diameter, sigma_i, sigma_s):
+
+    row_len = len(source)
+    col_len = len(source[0])
+    filtered_image = img_result = np.full((row_len, col_len, 3), 0)
+
+    row = 0
+    while row < row_len:
+        col = 0
+        while col < col_len:
+            apply_bilateral_filter(
+                source, filtered_image, row, col, filter_diameter, sigma_i, sigma_s)
+            col += 1
+        row += 1
+
+    print(filtered_image)
+    return filtered_image
