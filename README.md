@@ -1,8 +1,9 @@
 # Image-enhancer
 
 ## Image Denoising
+description
 
-### RMSE(Root Mean Square Error)
+## RMSE(Root Mean Square Error)
 By rooting the MSE(Mean Square Error), the distortion of the value caused by squaring the error is reduced.
 - The smaller the value, the more similar the two images are.
 
@@ -20,7 +21,7 @@ def calculate_rmse(img1, img2):
     return np.sqrt(np.mean(diff ** 2))
 ```
 
-### Average Filter
+## Average Filter
 
 Because padding occurs when avg filter is applied, the padding distance is set as the edge variable in the code.  
 In the first two iterations, each row and column of the given img are traversed. Each circuit traverses the rows and columns of the kernel, stores the RGB values of each channel in the temp variable, and divides them by the kernel size (adj_val) when the kernel is complete, and stores them in the image (img_result) to be returned  
@@ -59,6 +60,7 @@ def apply_average_filter(img, kernel_size):
     return img_result
 ```
 
+### Result: Average
 <div align="center">
   <img src="docs_imgs/average_result.png" alt="drawing" width=700"/>
 </div>
@@ -67,7 +69,7 @@ def apply_average_filter(img, kernel_size):
 
 
 
-### Sobel filter
+## Sobel filter
 
 It is the same principle as the average filter, but the blue filter and the derivative column filter are specified.
 
@@ -134,6 +136,8 @@ def apply_sobel_filter(img, kernel_size, is_vertical):
     return img_result
 ```
 
+### Result: Sobel
+
 <div align="center">
   <img src="docs_imgs/sobel_result.png" alt="drawing" width=700"/>
 </div>
@@ -141,9 +145,7 @@ def apply_sobel_filter(img, kernel_size, is_vertical):
 - The Sobel filter applies differentiation in the vertical and horizontal directions, and visualizes by allocating darker values with negative changes and brighter values with positive changes. Consequently, it is advantageous for edge detection.
 
 
-### Median filter
-
-
+## Median filter
 ```python
 def apply_median_filter(img, kernel_size):
     edge = int((kernel_size - 1) / 2)
@@ -179,13 +181,39 @@ def apply_median_filter(img, kernel_size):
     return img_result
 ```
 
-### Gaussian filter
+## Gaussian filter
 ```python
+def apply_gaussian_filter(img, k_size=3, sigma=1):
+    rows, cols, channels = img.shape
+
+    # Check the source code for more information about gaussian_kernel
+    gaussian_filter = gaussian_kernel(k_size, sigma)
+
+    pad_img = padding(img, k_size)
+    filtered_img = np.zeros((rows, cols, channels), dtype=np.float32)
+
+    for ch in range(0, channels):
+        for i in range(rows):
+            for j in range(cols):
+                filtered_img[i, j, ch] = np.sum(
+                    gaussian_filter * pad_img[i:i+k_size, j:j+k_size, ch])
+
+    return filtered_img.astype(np.uint8)
 ```
 
-## Noisy test images
+## Test images
+**Clean**
+<div align="center">
+  <figure class="third"> 
+    <img src="test_imgs/cat_clean.jpg" alt="drawing" width="200"/>
+    <img src="docs_imgs/blank_space.png" alt="drawing" width="20"/>
+    <img src="test_imgs/fox_clean.jpg" alt="drawing" width="215"/>
+    <img src="docs_imgs/blank_space.png" alt="drawing" width="20"/>
+    <img src="test_imgs/snowman_clean.jpg" alt="drawing" width="200"/>
+    </figure>
+</div>
 
-
+**Noisy**
 <div align="center">
   <figure class="third"> 
     <img src="test_imgs/cat_noisy.jpg" alt="drawing" width="200"/>
@@ -196,6 +224,21 @@ def apply_median_filter(img, kernel_size):
     </figure>
 </div>
 
+### Result
+
+<div align="center">
+  <img src="docs_imgs/result_imgs.png" alt="drawing" width=800"/>
+</div>
+
+- cat(median, 3) → 7.87(RMSE) : Advanced
+- fox(gaussian, 3, 1) → 11.58(RMSE) : Basic
+- snowman(median, 7) → 9.76(RMSE) : Advanced
+
+### Why Median and Gaussian?
+The given cat and snowman noise images are representative cases of **salt and pepper**. It was determined that a median filter would be suitable when extreme pixel values alternately appear, such as in the Salt and pepper image.
+ 
+On the other hand, in the case of the original fox image, the background is **blurred** because it is focused on foxes and trees. Therefore, if the image with noise is slightly blurred, it would be similar to the original image, so we chose a Gaussian filter that blur the image.
+
 ## Fourier Transform
 
 ### Low pass filter
@@ -203,3 +246,16 @@ def apply_median_filter(img, kernel_size):
 ### High pass filter
 
 ## Image enhancement
+
+
+## Libraries
+- [OpenCV](https://opencv.org/)
+- [Numpy](https://numpy.org/)
+
+
+## References
+Some images are from [SeonJoo Kim](https://sites.google.com/site/seonjookim/), Yonsei University
+
+### Environment
+OS: Mac Ventura  
+Language: Python(3.9.12)
