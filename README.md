@@ -41,9 +41,6 @@ def apply_average_filter(img, kernel_size):
 
     img_result = np.full((row_len, col_len, 3), 0)
 
-    # if kernel_size == 1:
-    #     return img
-
     for row in range(edge, row_len-edge):
         for col in range(edge, col_len-edge):
             temp_0, temp_1, temp_2 = 0, 0, 0
@@ -54,7 +51,9 @@ def apply_average_filter(img, kernel_size):
                     temp_1 += img[result_row, result_col, 1]
                     temp_2 += img[result_row, result_col, 2]
 
-            temp_0, temp_1, temp_2 = temp_0 * adj_value, temp_1 * adj_value, temp_2 * adj_value
+            temp_0 = temp_0 * adj_value
+            temp_1 = temp_1 * adj_value
+            temp_2 = temp_2 * adj_value
             img_result[row, col] = [temp_0, temp_1, temp_2]
 
     return img_result
@@ -103,7 +102,10 @@ def apply_sobel_filter(img, kernel_size, is_vertical):
             ver_val = blur[row] * derivative[col]
             hor_val = derivative[row] * blur[col]
 
-            sobel_kernel[row][col] = ver_val if is_vertical == True else hor_val
+            if is_vertical:
+                sobel_kernel[row][col] = ver_val 
+            else:
+                sobel_kernel[row][col] = hor_val
 
     # result setting
     edge = int((kernel_size - 1) / 2)
@@ -123,7 +125,9 @@ def apply_sobel_filter(img, kernel_size, is_vertical):
                     kernel_row = result_row - (row-edge)
                     kernel_col = result_col - (col-edge)
 
-                    temp += img[result_row, result_col, 0] * sobel_kernel[kernel_row][kernel_col]
+                    img_value = img[result_row, result_col, 0]
+                    sobel_value = sobel_kernel[kernel_row][kernel_col]
+                    temp += img_value * sobel_value
 
             img_result[row, col, 0] = np.clip(temp, 0, 255)
 
@@ -185,7 +189,9 @@ def apply_median_filter(img, kernel_size):
 <div align="center">
   <figure class="third"> 
     <img src="test_imgs/cat_noisy.jpg" alt="drawing" width="200"/>
-    <img src="test_imgs/fox_noisy.jpg" alt="drawing" width="200"/>
+    <img src="docs_imgs/blank_space.png" alt="drawing" width="20"/>
+    <img src="test_imgs/fox_noisy.jpg" alt="drawing" width="215"/>
+    <img src="docs_imgs/blank_space.png" alt="drawing" width="20"/>
     <img src="test_imgs/snowman_noisy.jpg" alt="drawing" width="200"/>
     </figure>
 </div>
