@@ -1,9 +1,13 @@
 # Image-enhancer
 
-## Image Denoising
-description
+## Overview: Image Denoising
+There are many ways to denoise damaged image.  
+At this project, we implement three main method to denoise image.
+- Filter denoising
+- Pass Filter using FFT(Fast Fourier Transform)
+- Histogram equallization
 
-## RMSE(Root Mean Square Error)
+### Notice: RMSE(Root Mean Square Error)
 By rooting the MSE(Mean Square Error), the distortion of the value caused by squaring the error is reduced.
 - The smaller the value, the more similar the two images are.
 
@@ -20,6 +24,8 @@ def calculate_rmse(img1, img2):
     diff = np.abs(img1.astype(dtype=int) - img2.astype(dtype=int))
     return np.sqrt(np.mean(diff ** 2))
 ```
+
+- - -
 
 ## Average Filter
 
@@ -239,13 +245,110 @@ The given cat and snowman noise images are representative cases of **salt and pe
  
 On the other hand, in the case of the original fox image, the background is **blurred** because it is focused on foxes and trees. Therefore, if the image with noise is slightly blurred, it would be similar to the original image, so we chose a Gaussian filter that blur the image.
 
+- - -
+
 ## Fourier Transform
 
-### Low pass filter
+### Why using FFT?
 
-### High pass filter
+**Spatial domain filtering**
+<div align="center">
+  <img src="docs_imgs/fft_example.png" alt="drawing" width=700"/>
+</div>
 
-## Image enhancement
+Using the FFT technique, it is possible to move an image of a spatial domain to the frequency domain. Then, large-scale patterns within the original image correspond to low frequencies, and small-scale noise-like patterns correspond to high frequencies. In other words, the frequency domain can be divided into low-frequency and high-frequency parts, and processing such high-frequency parts as removal or attenuation and then inverse transforming them back to the spatial domain is a typical processing method of FFT-based noise removal.
+
+Also FFT can reduce time and computational complexity when compared to kernel filtering.
+
+**fftshift & ifftshift**
+```python
+def fftshift(img):
+    '''
+    This function should shift the spectrum image to the center.
+    You should not use any kind of built in shift function. Please implement your own.
+    '''
+    row_len, col_len = img.shape
+    fft_shifted = np.roll(img, (row_len//2, col_len//2), axis=(0, 1))
+
+    return fft_shifted
+
+
+def ifftshift(img):
+    '''
+    This function should do the reverse of what fftshift function does.
+    You should not use any kind of built in shift function. Please implement your own.
+    '''
+    row_len, col_len = np.shape(img)
+    fft_unshifted = np.roll(img, (-row_len//2, -col_len//2), axis=(0, 1))
+
+    return fft_unshifted
+
+```
+
+### Low/High pass filter
+
+<div align="center">
+  <img src="docs_imgs/pass_filter_formula.png" alt="drawing" width=400"/>
+</div>
+
+- Image preprocessing with fft, ftshift
+- lpf: 0 elements not included in the reference distance (r) relative to the image center
+- hpf: 0 elements included in the reference distance (r) relative to the image center
+- Return the image by post-processing iftshift, ifft in the reverse order of preprocessing
+
+
+```python
+def low_pass_filter(img, r=30):
+    '''
+    This function should return an image that goes through low-pass filter.
+    '''
+    fft_img = np.fft.fft2(img)
+    fftshift_img = fftshift(fft_img)
+
+    row_len, col_len = fftshift_img.shape
+    row_center, col_center = int(row_len/2), int(col_len/2)
+
+    result_fft_img = fftshift_img.copy()
+
+    for row in range(row_len):
+        for col in range(col_len):
+            edge_radius = np.sqrt((row_center-row)**2 + (col_center-col)**2)
+
+            if edge_radius > r:
+                result_fft_img[row, col] = 0
+
+    ifft_img = ifftshift(result_fft_img)
+    result_img = np.fft.ifft2(ifft_img).real
+
+    return result_img
+
+
+def high_pass_filter(img, r=20):
+    '''
+    This function should return an image that goes through high-pass filter.
+    '''
+    fft_img = np.fft.fft2(img)
+    fftshift_img = fftshift(fft_img)
+
+    row_len, col_len = fftshift_img.shape
+    row_center, col_center = int(row_len/2), int(col_len/2)
+
+    result_fft_img = fftshift_img.copy()
+
+    for row in range(row_len):
+        for col in range(col_len):
+            edge_radius = np.sqrt((row_center-row)**2 + (col_center-col)**2)
+
+            if edge_radius < r:
+                result_fft_img[row, col] = 0
+
+    ifft_img = ifftshift(result_fft_img)
+    result_img = np.fft.ifft2(ifft_img).real
+
+    return result_img
+```
+
+## Histogram equallization
 
 
 ## Libraries
