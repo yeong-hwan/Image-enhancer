@@ -358,12 +358,49 @@ def high_pass_filter(img, r=20):
   <img src="docs_imgs/fft_result.png" alt="drawing" width=400"/>
 </div>
 
+- LPF: image of dull edge and blurred by removing high frequency part  
+- HPF: edge-oriented image by removing low frequency part
+
+- - - 
 
 ## Histogram equallization
+Histogram equalization uses a low contrast input image with a narrow range of pixel values to obtain a high contrast output image with a wide range of pixel values. In other words, because the brightness values are concentrated, a clearer image is obtained by smoothing a dim or bright image.
 
-## Test image
+```python
+hist, bins = np.histogram(img.ravel(), 256, [0, 256])
+hist_sum = hist.cumsum()
 
-## result
+# except 0 by mask
+hist_m0 = np.ma.masked_equal(hist_sum, 0)
+
+# equallization
+hist_m0 = (hist_m0 - hist_m0.min()) * 255 / (hist_m0.max() - hist_m0.min())
+
+# restore 0 from mask excepted
+hist_sum = np.ma.filled(hist_m0, 0).astype('uint8')
+
+result_img = hist_sum[img]
+
+return result_img
+```
+
+- stretch histogram using below equation
+> (hist_m0- hist_m0.min())*255/(hist_m0.max()- hist_m0.min())
+
+## Test image & Result
+
+<div align="center">
+  <figure class="third"> 
+    <img src="test_imgs/engi_hall_low_light.jpg" alt="drawing" width=300"/>
+    <img src="docs_imgs/blank_space.png" alt="drawing" width="20"/>
+    <img src="docs_imgs/histogram_result.png" alt="drawing" width=305"/>
+    </figure>
+</div>
+
+- The histogram of the dark image was concentrated on the left and the bright image on the right, so if you spread this distribution widely, you will get an image of moderate brightness.
+
+
+- - -
 
 ## Libraries
 - [OpenCV](https://opencv.org/)
