@@ -230,7 +230,7 @@ def apply_gaussian_filter(img, k_size=3, sigma=1):
     </figure>
 </div>
 
-### Result
+## Results
 
 <div align="center">
   <img src="docs_imgs/result_imgs.png" alt="drawing" width=800"/>
@@ -347,9 +347,23 @@ def high_pass_filter(img, r=20):
 
     return result_img
 ```
+## Test image
+**Lena_clean**
+<div align="center">
+  <img src="test_imgs/lena.png" alt="drawing" width=200"/>
+</div>
+
+### Result
+<div align="center">
+  <img src="docs_imgs/fft_result.png" alt="drawing" width=400"/>
+</div>
+
 
 ## Histogram equallization
 
+## Test image
+
+## result
 
 ## Libraries
 - [OpenCV](https://opencv.org/)
